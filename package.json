@@ -12,7 +12,8 @@
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "images:sync": "tsx scripts/sync-product-images.ts",
-    "admin:promote": "tsx prisma/promote-admin.ts"
+    "admin:promote": "tsx prisma/promote-admin.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.7.27",
