@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+.ai-tasklog/
 
 # debug
 npm-debug.log*

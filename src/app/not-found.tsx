@@ -10,8 +10,8 @@ export default function NotFound() {
       </h1>
 
       <p className="mt-4 max-w-md text-gray-600">
-        Cette page ou ce produit n'existe pas. Mais ne t'inquiète pas, d'autres
-        belles plantes t'attendent !
+        Cette page ou ce produit n&apos;existe pas. Mais ne t&apos;inquiète pas, d&apos;autres
+        belles plantes t&apos;attendent !
       </p>
 
       <Link

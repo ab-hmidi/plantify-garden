@@ -29,7 +29,15 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/");
+      const requestedPath = new URLSearchParams(window.location.search).get(
+        "next",
+      );
+      const nextPath =
+        requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
+          ? requestedPath
+          : "/";
+
+      router.push(nextPath);
       router.refresh();
     } catch {
       setError("Une erreur inattendue est survenue");

@@ -1,23 +1,30 @@
-import { getAllProducts } from "@/features/products/services/product.service";
-import ProductCard from "@/features/products/components/ProductCard";
+import { Suspense } from "react";
+import ProductCatalog from "@/features/products/components/ProductCatalog";
 
-export default async function ShopPage() {
-  const products = await getAllProducts();
+type ShopPageProps = {
+  searchParams: Promise<{
+    page?: string | string[] | undefined;
+    q?: string | string[] | undefined;
+    category?: string | string[] | undefined;
+  }>;
+};
 
+export default function ShopPage({ searchParams }: ShopPageProps) {
   return (
-    <main className="mx-auto max-w-7xl px-6 py-12">
-      <h1 className="text-3xl font-bold">Nos plantes</h1>
-
-      <p className="mt-3 text-gray-600">
-        Découvrez notre sélection de plantes pour votre intérieur et votre
-        jardin.
-      </p>
-
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-    </main>
+    <Suspense
+      fallback={
+        <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-12">
+          Chargement du catalogue...
+        </main>
+      }
+    >
+      <ProductCatalog
+        title="Boutique"
+        description="Recherchez une plante ou explorez le catalogue par catégorie."
+        basePath="/shop"
+        enableFilters
+        searchParams={searchParams}
+      />
+    </Suspense>
   );
 }

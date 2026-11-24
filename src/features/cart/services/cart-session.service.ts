@@ -22,3 +22,18 @@ export async function getCartSessionId(): Promise<string> {
 
   return sessionId;
 }
+
+export async function rotateCartSessionId(): Promise<string> {
+  const sessionId = randomUUID();
+  const cookieStore = await cookies();
+
+  cookieStore.set(CART_SESSION_COOKIE, sessionId, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+
+  return sessionId;
+}

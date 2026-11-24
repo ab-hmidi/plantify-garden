@@ -16,6 +16,7 @@ type CartAction =
   | {
       type: "ADD_ITEM";
       productId: number;
+      stock: number;
     }
   | {
       type: "REMOVE_ITEM";
@@ -41,6 +42,7 @@ type CartContextValue = {
   removeItem: (productId: number) => Promise<void>;
   incrementItem: (productId: number) => Promise<void>;
   decrementItem: (productId: number) => Promise<void>;
+  refreshCart: () => Promise<void>;
 };
 
 const initialState: CartState = {
@@ -167,81 +169,70 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   async function removeItem(productId: number) {
-    try {
-      const response = await fetch("/api/cart", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId }),
-      });
+    const response = await fetch("/api/cart", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Impossible de supprimer le produit");
-      }
-
-      await refreshCart();
-    } catch (error) {
-      console.error("Erreur lors de la suppression :", error);
+    if (!response.ok) {
+      throw new Error("Impossible de supprimer le produit");
     }
+
+    await refreshCart();
   }
 
   async function incrementItem(productId: number) {
-    try {
-      const currentItem = state.items.find(
-        (item) => item.productId === productId,
-      );
+    const currentItem = state.items.find(
+      (item) => item.productId === productId,
+    );
 
-      if (!currentItem) return;
+    if (!currentItem) return;
 
-      const response = await fetch("/api/cart", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId,
-          quantity: currentItem.quantity + 1,
-        }),
-      });
+    const response = await fetch("/api/cart", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId,
+        quantity: currentItem.quantity + 1,
+      }),
+    });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Impossible d'augmenter la quantité");
-      }
-
-      await refreshCart();
-    } catch (error) {
-      console.error("Erreur lors de l'augmentation :", error);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Impossible d'augmenter la quantité");
     }
+
+    await refreshCart();
   }
 
   async function decrementItem(productId: number) {
-    try {
-      const currentItem = state.items.find(
-        (item) => item.productId === productId,
-      );
+    const currentItem = state.items.find(
+      (item) => item.productId === productId,
+    );
 
-      if (!currentItem) return;
+    if (!currentItem) return;
 
-      if (currentItem.quantity === 1) {
-        await removeItem(productId);
-        return;
-      }
-
-      const response = await fetch("/api/cart", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId,
-          quantity: currentItem.quantity - 1,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Impossible de diminuer la quantité");
-      }
-
-      await refreshCart();
-    } catch (error) {
-      console.error("Erreur lors de la diminution :", error);
+    if (currentItem.quantity === 1) {
+      await removeItem(productId);
+      return;
     }
+
+    const response = await fetch("/api/cart", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId,
+        quantity: currentItem.quantity - 1,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Impossible de diminuer la quantité");
+    }
+
+    await refreshCart();
   }
 
   async function refreshCart() {
@@ -271,6 +262,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         decrementItem,
         incrementItem,
+        refreshCart,
       }}
     >
       {children}

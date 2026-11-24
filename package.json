@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "tsx --test tests/product-input.test.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "prisma db seed",
+    "images:sync": "tsx scripts/sync-product-images.ts",
+    "admin:promote": "tsx prisma/promote-admin.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.7.27",

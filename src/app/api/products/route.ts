@@ -5,7 +5,9 @@ export async function GET() {
   try {
     const products = await getAllProducts();
 
-    return NextResponse.json(products);
+    return NextResponse.json(products, {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération des produits :", error);
 

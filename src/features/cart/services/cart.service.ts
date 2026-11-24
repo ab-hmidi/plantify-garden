@@ -1,12 +1,33 @@
 import "server-only";
 import * as cartRepository from "../repositories/cart.repository";
-import { getCartSessionId } from "./cart-session.service";
+import {
+  getCartSessionId,
+  rotateCartSessionId,
+} from "./cart-session.service";
 import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/authorization";
 
 export async function getOrCreateCart() {
-  const sessionId = await getCartSessionId();
+  let sessionId = await getCartSessionId();
+  const user = await getCurrentUser();
+  let sessionCart = await prisma.cart.findUnique({
+    where: { sessionId },
+    select: { userId: true },
+  });
 
-  return cartRepository.findOrCreateBySessionId(sessionId);
+  if (
+    sessionCart?.userId &&
+    sessionCart.userId !== (user?.id ?? null)
+  ) {
+    sessionId = await rotateCartSessionId();
+    sessionCart = null;
+  }
+
+  if (!user) {
+    return cartRepository.findOrCreateBySessionId(sessionId);
+  }
+
+  return cartRepository.findOrCreateForUser(sessionId, user.id);
 }
 
 export async function addProductToCart(
@@ -19,7 +40,7 @@ export async function addProductToCart(
     where: { id: productId },
   });
 
-  if (!product) {
+  if (!product || !product.active) {
     throw new Error("PRODUCT_NOT_FOUND");
   }
 
@@ -52,7 +73,7 @@ export async function updateCartItemQuantity(
     where: { id: productId },
   });
 
-  if (!product) {
+  if (!product || !product.active) {
     throw new Error("PRODUCT_NOT_FOUND");
   }
 

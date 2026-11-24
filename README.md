@@ -1,38 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Plantify Garden
 
-## Getting Started
+Boutique de plantes construite avec Next.js, Better Auth, Prisma ORM 7 et PostgreSQL.
 
-First, run the development server:
+## Développement local
+
+1. Installer les dépendances avec `npm install`.
+2. Créer un fichier `.env` contenant `DATABASE_URL`. Pour la base locale de
+   `docker-compose.yml`, utiliser :
+
+   ```env
+   DATABASE_URL="postgresql://plantify:plantify_dev_password@localhost:5432/plantify?schema=public"
+   ```
+
+3. Démarrer PostgreSQL avec `docker compose up -d`.
+4. Appliquer les migrations, créer le client et synchroniser les images :
+
+   ```bash
+   npm run db:migrate
+   npm run db:generate
+   npm run db:seed
+   npm run images:sync
+   ```
+
+   Les 60 photos de plantes sont déjà stockées dans `public/images/products/`.
+   `images:sync` met à jour uniquement leurs chemins en base, sans modifier les
+   prix ni les stocks.
+
+5. Démarrer Next.js avec `npm run dev`.
+
+## Compte administrateur
+
+Créer un compte depuis `/register`, retrouver son identifiant dans Prisma
+Studio (`npx prisma studio`), puis le promouvoir explicitement depuis un
+environnement disposant de `DATABASE_URL` :
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run admin:promote -- identifiant-utilisateur
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Cette opération donne accès à `/admin` et aux API d’administration des produits.
+Le rôle n’est pas modifiable depuis l’inscription publique.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Fonctionnalités
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-# plantify-garden
+- La page d’accueil affiche directement le catalogue : 60 produits, 12 par page, avec une photo distincte par produit. Les sources et licences sont listées sur `/image-credits`.
+- Catalogue public, panier invité et connexion/inscription.
+- Fusion du panier invité avec le panier du compte lors de la connexion.
+- Commande sans paiement en ligne ; le stock est vérifié et décrémenté dans une
+  transaction à la création de la commande.
+- Administration des produits, prix, catégories et stocks.
